@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Chronicle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+–bg:     #0c0a08;
+–panel:  #181410;
+–panel2: #201c16;
+–gold:   #c8a84a;
+–muted:  #6e6658;
+–text:   #ede5d5;
+–border: rgba(200,168,74,0.2);
+–red:    #7a3020;
+}
+
+html { height: 100%; }
+body {
+min-height: 100%;
+background: var(–bg);
+color: var(–text);
+font-family: ‘Outfit’, sans-serif;
+font-weight: 300;
+font-size: 15px;
+-webkit-text-size-adjust: 100%;
+}
+
+/* ── SHELL ── */
+#app {
+display: flex;
+flex-direction: column;
+height: 100dvh;
+height: -webkit-fill-available;
+}
+
+/* ── HEADER ── */
+#hdr {
+flex-shrink: 0;
+background: var(–panel);
+border-bottom: 1px solid var(–border);
+padding-top: env(safe-area-inset-top, 0px);
+}
+#hdr-in {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 12px 16px;
+}
+#logo {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 22px; font-weight: 600;
+color: var(–gold); letter-spacing: 0.1em;
+}
+#logo small {
+display: block;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 8px; letter-spacing: 0.3em;
+text-transform: uppercase; color: var(–muted);
+margin-top: -2px; font-style: normal;
+}
+#dots { display: flex; gap: 12px; }
+.dwrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #5a2018; transition: background 0.3s; }
+.dot.on { background: #3a8a3a; }
+.dlbl { font-family: ‘JetBrains Mono’, monospace; font-size: 7px; color: var(–muted); letter-spacing: 0.1em; }
+
+/* ── CONTENT ── */
+#content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── BOTTOM NAV ── */
+#nav {
+flex-shrink: 0;
+background: var(–panel);
+border-top: 1px solid var(–border);
+padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+#nav-in { display: flex; }
+.ni {
+flex: 1;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+gap: 3px; padding: 10px 0;
+background: none; border: none;
+color: var(–muted);
+font-family: ‘Outfit’, sans-serif;
+font-size: 10px; letter-spacing: 0.04em;
+cursor: pointer;
+-webkit-appearance: none;
+touch-action: manipulation;
+user-select: none; -webkit-user-select: none;
+transition: color 0.15s;
+}
+.ni.on { color: var(–gold); }
+.ni-ico { font-size: 20px; line-height: 1; }
+
+/* ── TABS ── */
+.tab { display: none; }
+.tab.on { display: block; }
+
+/* ═══════════════════
+STORY TAB
+═══════════════════ */
+#story-ctrl {
+background: var(–panel);
+border-bottom: 1px solid var(–border);
+padding: 12px 14px;
+display: flex; flex-direction: column; gap: 10px;
+}
+
+/* Genre scroll */
+#genre-row {
+display: flex; gap: 6px;
+overflow-x: auto; padding-bottom: 2px;
+scrollbar-width: none;
+}
+#genre-row::-webkit-scrollbar { display: none; }
+.gp {
+flex-shrink: 0;
+padding: 5px 12px;
+border-radius: 20px;
+border: 1px solid rgba(255,255,255,0.09);
+background: rgba(255,255,255,0.03);
+color: var(–muted);
+font-family: ‘Outfit’, sans-serif; font-size: 12px;
+white-space: nowrap; cursor: pointer;
+-webkit-appearance: none; touch-action: manipulation;
+user-select: none; -webkit-user-select: none;
+transition: all 0.15s;
+}
+.gp.on { background: var(–gold); border-color: var(–gold); color: #0c0a08; font-weight: 500; }
+
+/* Custom genre */
+#cust-row { display: none; }
+#cust-row.show { display: block; }
+#cust-in {
+width: 100%; padding: 10px 12px;
+background: var(–panel2);
+border: 1px solid rgba(255,255,255,0.09);
+border-radius: 10px;
+color: var(–text);
+font-family: ‘Outfit’, sans-serif; font-size: 13px;
+outline: none;
+}
+#cust-in::placeholder { color: var(–muted); }
+#cust-in:focus { border-color: var(–gold); }
+
+/* Message row */
+#msg-row { display: flex; gap: 8px; align-items: flex-end; }
+#msg-in {
+flex: 1;
+padding: 11px 13px;
+background: var(–panel2);
+border: 1px solid rgba(255,255,255,0.09);
+border-radius: 12px;
+color: var(–text);
+font-family: ‘Outfit’, sans-serif; font-size: 14px; line-height: 1.4;
+outline: none; resize: none;
+min-height: 44px; max-height: 110px;
+overflow-y: auto;
+}
+#msg-in::placeholder { color: var(–muted); }
+#msg-in:focus { border-color: rgba(200,168,74,0.4); }
+#send {
+width: 44px; height: 44px; flex-shrink: 0;
+background: var(–gold); border: none; border-radius: 12px;
+color: #0c0a08; font-size: 18px; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+-webkit-appearance: none; touch-action: manipulation;
+user-select: none; -webkit-user-select: none;
+transition: opacity 0.15s;
+}
+#send:disabled { opacity: 0.35; }
+#send:active:not(:disabled) { opacity: 0.65; }
+
+/* Feed */
+#feed { padding: 14px; display: flex; flex-direction: column; gap: 16px; }
+#empty-state {
+text-align: center; padding: 60px 20px;
+color: var(–muted);
+}
+#empty-state .ei { font-size: 48px; margin-bottom: 14px; opacity: 0.25; }
+#empty-state p { font-size: 14px; line-height: 1.7; }
+
+.sc {
+background: var(–panel);
+border: 1px solid var(–border);
+border-radius: 14px; overflow: hidden;
+}
+.sc-txt { padding: 20px 16px; }
+.sc-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.sc-tag {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+color: var(–gold); border: 1px solid var(–border); padding: 2px 8px; border-radius: 20px;
+}
+.sc-line { flex: 1; height: 1px; background: var(–border); }
+.sc-prose {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 18px; line-height: 1.85; color: #e0d8c8;
+}
+.sc-prose p + p { margin-top: 12px; }
+.sc-img { background: #080604; }
+.sc-img img { width: 100%; display: block; }
+.sc-img-err {
+height: 80px; display: flex; align-items: center; justify-content: center;
+color: var(–muted); font-size: 12px; text-align: center;
+}
+.sc-new {
+padding: 10px 16px;
+font-family: ‘JetBrains Mono’, monospace; font-size: 10px;
+color: var(–gold); letter-spacing: 0.05em;
+background: rgba(200,168,74,0.06); border-top: 1px solid var(–border);
+}
+.ld { padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(–muted); font-size: 13px; }
+.spin { width: 30px; height: 30px; border: 2px solid rgba(200,168,74,0.15); border-top-color: var(–gold); border-radius: 50%; animation: sp 0.8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+/* ═══════════════════
+CHARACTERS TAB
+═══════════════════ */
+#chars-hdr {
+display: flex; align-items: center; justify-content: space-between;
+padding: 16px 14px 0; margin-bottom: 14px;
+}
+#chars-title { font-family: ‘Cormorant Garamond’, serif; font-size: 24px; font-weight: 600; }
+#add-btn {
+background: none; border: 1px solid var(–border); border-radius: 8px;
+color: var(–gold); font-family: ‘Outfit’, sans-serif; font-size: 13px;
+padding: 7px 13px; cursor: pointer;
+-webkit-appearance: none; touch-action: manipulation;
+}
+#add-btn:active { opacity: 0.6; }
+#chars-list { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+#chars-empty { text-align: center; padding: 50px 20px; color: var(–muted); font-size: 14px; line-height: 1.7; }
+
+.cc {
+background: var(–panel); border: 1px solid var(–border); border-radius: 14px; overflow: hidden;
+}
+.cc.prot { border-color: rgba(200,168,74,0.5); }
+.cc-top { display: flex; gap: 12px; padding: 14px; }
+.cc-photo {
+width: 68px; height: 68px; flex-shrink: 0; border-radius: 10px;
+background: var(–panel2); overflow: hidden; position: relative; cursor: pointer;
+-webkit-appearance: none; touch-action: manipulation;
+}
+.cc-photo img { width: 100%; height: 100%; object-fit: cover; }
+.cc-ph-empty {
+width: 100%; height: 100%;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+gap: 3px; font-size: 9px; color: var(–muted);
+}
+.cc-ph-empty span:first-child { font-size: 22px; opacity: 0.3; }
+.cc-ph-ov {
+position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+display: flex; align-items: center; justify-content: center;
+font-size: 16px; opacity: 0; transition: opacity 0.2s;
+}
+.cc-photo:hover .cc-ph-ov, .cc-photo:active .cc-ph-ov { opacity: 1; }
+
+.cc-flds { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.cc-name {
+width: 100%; background: none; border: none;
+border-bottom: 1px solid rgba(255,255,255,0.08);
+color: var(–text); font-family: ‘Cormorant Garamond’, serif;
+font-size: 20px; font-weight: 600; padding-bottom: 4px; outline: none;
+}
+.cc-name:focus { border-bottom-color: var(–gold); }
+.cc-nick {
+width: 100%; background: none; border: none;
+border-bottom: 1px solid rgba(255,255,255,0.08);
+color: var(–muted); font-family: ‘Outfit’, sans-serif;
+font-size: 12px; font-style: italic; padding-bottom: 4px; outline: none;
+}
+.cc-nick::placeholder { color: var(–muted); opacity: 0.4; }
+.cc-nick:focus { border-bottom-color: var(–gold); color: var(–text); }
+.cc-role {
+width: 100%; background: var(–panel2);
+border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;
+color: var(–muted); font-family: ‘Outfit’, sans-serif;
+font-size: 12px; padding: 5px 8px; outline: none;
+-webkit-appearance: none; touch-action: manipulation;
+}
+.cc-role option { background: var(–panel); }
+.cc-desc-w { padding: 0 14px 14px; }
+.cc-desc {
+width: 100%; background: var(–panel2);
+border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
+color: var(–muted); font-family: ‘Outfit’, sans-serif;
+font-size: 13px; line-height: 1.5; padding: 9px 11px;
+resize: vertical; min-height: 65px; outline: none;
+}
+.cc-desc::placeholder { color: var(–muted); opacity: 0.4; }
+.cc-desc:focus { border-color: rgba(200,168,74,0.3); color: var(–text); }
+.cc-foot {
+display: flex; align-items: center; justify-content: space-between;
+padding: 9px 14px; border-top: 1px solid rgba(255,255,255,0.05);
+}
+.cc-src { font-family: ‘JetBrains Mono’, monospace; font-size: 9px; color: var(–muted); opacity: 0.5; }
+.cc-del {
+background: none; border: none; color: #8a4030;
+font-family: ‘Outfit’, sans-serif; font-size: 12px; cursor: pointer;
+-webkit-appearance: none; touch-action: manipulation;
+}
+.cc-del:active { opacity: 0.6; }
+
+/* ═══════════════════
+SETTINGS TAB
+═══════════════════ */
+#set-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.ss { background: var(–panel); border: 1px solid var(–border); border-radius: 14px; padding: 18px; }
+.ss h3 { font-family: ‘Cormorant Garamond’, serif; font-size: 18px; margin-bottom: 4px; }
+.ss p { font-size: 13px; color: var(–muted); line-height: 1.6; margin-bottom: 14px; }
+.ss a { color: var(–gold); text-decoration: none; }
+.flbl { display: block; font-family: ‘JetBrains Mono’, monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(–gold); margin-bottom: 5px; }
+.frow { display: flex; gap: 7px; margin-bottom: 5px; }
+.fk {
+flex: 1; padding: 10px 12px;
+background: var(–panel2); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px;
+color: var(–text); font-family: ‘JetBrains Mono’, monospace; font-size: 12px; outline: none;
+}
+.fk::placeholder { color: var(–muted); opacity: 0.4; }
+.fk:focus { border-color: rgba(200,168,74,0.4); }
+.fsv {
+background: none; border: 1px solid var(–border); border-radius: 9px;
+color: var(–gold); font-family: ‘Outfit’, sans-serif; font-size: 13px;
+padding: 10px 14px; cursor: pointer; white-space: nowrap;
+-webkit-appearance: none; touch-action: manipulation;
+}
+.fsv:active { opacity: 0.6; }
+.fok { font-family: ‘JetBrains Mono’, monospace; font-size: 10px; color: #4a8a4a; display: none; margin-bottom: 10px; }
+.fok.show { display: block; }
+.fsel {
+width: 100%; margin-top: 10px; padding: 10px 12px;
+background: var(–panel2); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px;
+color: var(–text); font-family: ‘Outfit’, sans-serif; font-size: 13px; outline: none;
+-webkit-appearance: none; touch-action: manipulation;
+}
+.fsel option { background: var(–panel); }
+.fdng {
+width: 100%; margin-top: 6px; padding: 11px;
+background: none; border: 1px solid rgba(122,48,32,0.4); border-radius: 9px;
+color: #905040; font-family: ‘Outfit’, sans-serif; font-size: 13px; cursor: pointer;
+-webkit-appearance: none; touch-action: manipulation;
+}
+.fdng:active { opacity: 0.6; }
+
+/* ── TOAST ── */
+#toast {
+position: fixed;
+left: 14px; right: 14px;
+bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+background: var(–panel2); border: 1px solid var(–border);
+border-radius: 10px; padding: 12px 16px;
+font-size: 13px; text-align: center;
+pointer-events: none; z-index: 9999;
+opacity: 0; transform: translateY(6px);
+transition: opacity 0.2s, transform 0.2s;
+}
+#toast.show { opacity: 1; transform: none; }
+#toast.err { color: #d07060; border-color: rgba(122,48,32,0.5); }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+
+  <div id="hdr">
+    <div id="hdr-in">
+      <div id="logo">Chronicle<small>AI Story Generator</small></div>
+      <div id="dots">
+        <div class="dwrap"><div class="dot" id="dot-g"></div><div class="dlbl">GROK</div></div>
+        <div class="dwrap"><div class="dot" id="dot-m"></div><div class="dlbl">GEMINI</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+
+  <div id="content">
+
+```
+<!-- STORY -->
+<div class="tab on" id="tab-story">
+  <div id="story-ctrl">
+    <div id="genre-row">
+      <button class="gp on" data-g="Fantasy">⚔️ Fantasy</button>
+      <button class="gp" data-g="Sci-Fi">🚀 Sci-Fi</button>
+      <button class="gp" data-g="Horror">🕯️ Horror</button>
+      <button class="gp" data-g="Dark Fantasy">🌑 Dark Fantasy</button>
+      <button class="gp" data-g="Romance">🌹 Romance</button>
+      <button class="gp" data-g="Mystery">🔍 Mystery</button>
+      <button class="gp" data-g="Adventure">🗺️ Adventure</button>
+      <button class="gp" data-g="Thriller">⚡ Thriller</button>
+      <button class="gp" data-g="Historical">📜 Historical</button>
+      <button class="gp" data-g="Cyberpunk">🤖 Cyberpunk</button>
+      <button class="gp" data-g="Custom">✏️ Custom</button>
+    </div>
+    <div id="cust-row">
+      <input id="cust-in" type="text" placeholder="Describe your genre or setting…">
+    </div>
+    <div id="msg-row">
+      <textarea id="msg-in" placeholder="What happens next? Guide your story…" rows="1"></textarea>
+      <button id="send" onclick="doSend()">✦</button>
+    </div>
+  </div>
+  <div id="feed">
+    <div id="empty-state">
+      <div class="ei">📖</div>
+      <p>Pick a genre and send<br>your first message to begin.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CHARACTERS -->
+<div class="tab" id="tab-characters">
+  <div id="chars-hdr">
+    <div id="chars-title">Characters</div>
+    <button id="add-btn" onclick="addChar()">+ Add</button>
+  </div>
+  <div id="chars-list">
+    <div id="chars-empty">No characters yet.<br>They appear automatically when Grok introduces new people,<br>or tap + Add to create one.</div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="tab" id="tab-settings">
+  <div id="set-body">
+    <div class="ss">
+      <h3>🗝 Grok API Key</h3>
+      <p>Go to <a href="https://console.x.ai" target="_blank">console.x.ai</a> → sign in with X → API Keys → Create Key. You get <strong style="color:var(--gold)">$25 free credits</strong>.</p>
+      <label class="flbl">API Key</label>
+      <div class="frow">
+        <input class="fk" type="password" id="grok-k" placeholder="xai-...">
+        <button class="fsv" onclick="saveKey('grok')">Save</button>
+      </div>
+      <div class="fok" id="grok-ok">✓ Saved</div>
+      <label class="flbl">Model</label>
+      <select class="fsel" id="grok-mod">
+        <option value="grok-3">grok-3 (best)</option>
+        <option value="grok-3-mini">grok-3-mini (faster)</option>
+        <option value="grok-2">grok-2</option>
+      </select>
+    </div>
+    <div class="ss">
+      <h3>✨ Gemini API Key</h3>
+      <p>Go to <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key → Create API Key. Completely <strong style="color:var(--gold)">free</strong>.</p>
+      <label class="flbl">API Key</label>
+      <div class="frow">
+        <input class="fk" type="password" id="gem-k" placeholder="AIza...">
+        <button class="fsv" onclick="saveKey('gem')">Save</button>
+      </div>
+      <div class="fok" id="gem-ok">✓ Saved</div>
+      <label class="flbl">Image Model</label>
+      <select class="fsel" id="gem-mod">
+        <option value="gemini-3-pro-image-preview">gemini-3-pro-image-preview</option>
+        <option value="gemini-2.0-flash-preview-image-generation">gemini-2.0-flash image gen</option>
+      </select>
+    </div>
+    <div class="ss">
+      <h3>🔒 Privacy</h3>
+      <p>Keys stored in this browser only. Sent directly to xAI and Google — never anywhere else.</p>
+      <button class="fdng" onclick="clearAll()">Clear all saved data</button>
+    </div>
+  </div>
+</div>
+```
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+
+  <div id="nav">
+    <div id="nav-in">
+      <button class="ni on" id="ni-story" onclick="goTab('story')"><span class="ni-ico">📖</span>Story</button>
+      <button class="ni" id="ni-characters" onclick="goTab('characters')"><span class="ni-ico">👤</span>Characters</button>
+      <button class="ni" id="ni-settings" onclick="goTab('settings')"><span class="ni-ico">⚙️</span>Settings</button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<input type="file" id="photo-pick" accept="image/*" style="display:none" onchange="onPhoto(event)">
+<div id="toast"></div>
+
+<script>
+'use strict';
+var G = { genre:'Fantasy', chars:[], hist:[] };
+var uploadId = null;
+var toastT = null;
+
+/* ── INIT ── */
+(function(){
+  loadData();
+  updateDots();
+  renderChars();
+
+  document.getElementById('genre-row').addEventListener('click', function(e){
+    var p = e.target.closest('.gp');
+    if(!p) return;
+    document.querySelectorAll('.gp').forEach(function(x){ x.classList.remove('on'); });
+    p.classList.add('on');
+    G.genre = p.getAttribute('data-g');
+    var cr = document.getElementById('cust-row');
+    cr.classList.toggle('show', G.genre==='Custom');
+    if(G.genre==='Custom') document.getElementById('cust-in').focus();
+  });
+
+  var mi = document.getElementById('msg-in');
+  mi.addEventListener('input', function(){
+    this.style.height='auto';
+    this.style.height=Math.min(this.scrollHeight,110)+'px';
+  });
+  mi.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); doSend(); }
+  });
+})();
+
+/* ── TABS ── */
+function goTab(name){
+  ['story','characters','settings'].forEach(function(t){
+    document.getElementById('tab-'+t).classList.toggle('on', t===name);
+    document.getElementById('ni-'+t).classList.toggle('on', t===name);
+  });
+  if(name==='characters') renderChars();
+}
+
+/* ── STORAGE ── */
+function loadData(){
+  try{
+    var r=localStorage.getItem('ch');
+    if(r){ var d=JSON.parse(r); G.genre=d.g||'Fantasy'; G.chars=d.c||[]; G.hist=d.h||[]; }
+    var gk=localStorage.getItem('ch_gk'); if(gk) document.getElementById('grok-k').value=gk;
+    var mk=localStorage.getItem('ch_mk'); if(mk) document.getElementById('gem-k').value=mk;
+    var gm=localStorage.getItem('ch_gm'); if(gm) document.getElementById('grok-mod').value=gm;
+    var mm=localStorage.getItem('ch_mm'); if(mm) document.getElementById('gem-mod').value=mm;
+    document.querySelectorAll('.gp').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-g')===G.genre); });
+    if(G.genre==='Custom') document.getElementById('cust-row').classList.add('show');
+  }catch(e){}
+}
+function save(){
+  try{ localStorage.setItem('ch', JSON.stringify({g:G.genre, c:G.chars, h:G.hist})); }catch(e){}
+}
+function saveKey(s){
+  var el=document.getElementById(s==='grok'?'grok-k':'gem-k');
+  var v=el.value.trim();
+  if(!v){ toast('Please enter a key',true); return; }
+  localStorage.setItem('ch_'+(s==='grok'?'gk':'mk'), v);
+  if(s==='grok') localStorage.setItem('ch_gm', document.getElementById('grok-mod').value);
+  if(s==='gem')  localStorage.setItem('ch_mm', document.getElementById('gem-mod').value);
+  updateDots();
+  var ok=document.getElementById(s+'-ok');
+  ok.classList.add('show');
+  setTimeout(function(){ ok.classList.remove('show'); }, 2500);
+  toast('Key saved!');
+}
+function clearAll(){
+  if(!confirm('Clear all data?')) return;
+  localStorage.clear();
+  G.chars=[]; G.hist=[]; G.genre='Fantasy';
+  document.getElementById('grok-k').value='';
+  document.getElementById('gem-k').value='';
+  document.getElementById('feed').innerHTML='<div id="empty-state"><div class="ei">📖</div><p>Pick a genre and send<br>your first message to begin.</p></div>';
+  renderChars(); updateDots(); toast('Cleared!');
+}
+function updateDots(){
+  document.getElementById('dot-g').classList.toggle('on',!!localStorage.getItem('ch_gk'));
+  document.getElementById('dot-m').classList.toggle('on',!!localStorage.getItem('ch_mk'));
+}
+
+/* ── STORY ── */
+async function doSend(){
+  var gk=localStorage.getItem('ch_gk');
+  var mk=localStorage.getItem('ch_mk');
+  if(!gk){ toast('Add your Grok key in Settings ⚙️',true); goTab('settings'); return; }
+  if(!mk){ toast('Add your Gemini key in Settings ⚙️',true); goTab('settings'); return; }
+
+  var mi=document.getElementById('msg-in');
+  var msg=mi.value.trim();
+  var gm=localStorage.getItem('ch_gm')||'grok-3';
+  var im=localStorage.getItem('ch_mm')||'gemini-3-pro-image-preview';
+  var ag=G.genre==='Custom'?(document.getElementById('cust-in').value.trim()||'Custom'):G.genre;
+
+  var btn=document.getElementById('send');
+  btn.disabled=true; btn.textContent='…';
+
+  var es=document.getElementById('empty-state');
+  if(es) es.style.display='none';
+
+  var cctx='';
+  if(G.chars.length){
+    cctx='\n\nCharacters:\n'+G.chars.map(function(c){
+      return '- '+c.name+(c.nick?' (aka "'+c.nick+'")':'')+' ('+c.role+'): '+(c.desc||'no description');
+    }).join('\n');
+  }
+  var hctx='';
+  if(G.hist.length){
+    hctx='\n\nRecent events:\n'+G.hist.slice(-3).map(function(h){ return h.t; }).join('\n\n---\n\n');
+  }
+
+  var sys='You are a master storyteller writing a '+ag+' story. '
+    +'Write vivid immersive prose of 2-4 paragraphs. '
+    +'Be consistent with characters and previous events. '
+    +'This is an adult story — depict mature themes, violence, sexuality or dark content explicitly when the narrative calls for it. '
+    +'At the end write "NEW_CHARS: name1, name2" for any new named characters introduced, or "NEW_CHARS: none".'
+    +cctx+hctx;
+
+  var feed=document.getElementById('feed');
+  var ldr=document.createElement('div');
+  ldr.className='sc'; ldr.id='ldr';
+  ldr.innerHTML='<div class="ld"><div class="spin"></div><span id="lmsg">Writing your story…</span></div>';
+  feed.insertBefore(ldr, feed.firstChild);
+
+  try{
+    /* 1. Grok */
+    var gr=await fetch('https://api.x.ai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+gk},
+      body:JSON.stringify({model:gm, messages:[{role:'system',content:sys},{role:'user',content:msg||'Begin the '+ag+' story'}], max_tokens:900, temperature:0.92})
+    });
+    if(!gr.ok){ var ge=await gr.json().catch(function(){return{};}); throw new Error('Grok: '+(ge.error&&ge.error.message?ge.error.message:gr.status)); }
+    var gd=await gr.json();
+    var txt=gd.choices[0].message.content;
+
+    var nc=[];
+    var ncm=txt.match(/NEW_CHARS:\s*(.+)$/m);
+    if(ncm && ncm[1].toLowerCase().trim()!=='none'){
+      nc=ncm[1].split(',').map(function(s){return s.trim();}).filter(Boolean);
+      txt=txt.replace(/\nNEW_CHARS:.+$/m,'').trim();
+    }
+    nc.forEach(function(name){
+      var ex=G.chars.some(function(c){return c.name.toLowerCase()===name.toLowerCase();});
+      if(!ex) G.chars.push({id:Date.now()+Math.random(),name:name,nick:'',role:'supporting',desc:'',photo:null,src:'story'});
+    });
+
+    /* 2. Gemini prompt */
+    lmsg('Crafting the scene…');
+    var cv=G.chars.filter(function(c){return c.desc;}).map(function(c){return c.name+': '+c.desc;}).join('; ');
+    var pr=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+mk,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:'Create a detailed image generation prompt for this story scene. Most cinematic moment. Include scene, lighting, mood, art style, colours. Output ONLY the prompt.\n\nGenre: '+ag+'\n'+(cv?'Characters: '+cv+'\n':'')+'Story:\n'+txt}]}]})
+    });
+    var ip='';
+    if(pr.ok){ var pd=await pr.json(); ip=((pd.candidates||[])[0]||{content:{parts:[]}}).content.parts[0]&&pd.candidates[0].content.parts[0].text||''; ip=ip.trim(); }
+
+    /* 3. Gemini image */
+    lmsg('Painting the scene…');
+    var imgUrl=null;
+    if(ip){
+      var ir=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+im+':generateContent?key='+mk,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:ip}]}], generationConfig:{responseModalities:['IMAGE','TEXT']}})
+      });
+      if(ir.ok){
+        var id2=await ir.json();
+        var pts=((id2.candidates||[])[0]||{content:{parts:[]}}).content.parts||[];
+        for(var i=0;i<pts.length;i++){
+          if(pts[i].inlineData&&pts[i].inlineData.mimeType&&pts[i].inlineData.mimeType.indexOf('image')===0){
+            imgUrl='data:'+pts[i].inlineData.mimeType+';base64,'+pts[i].inlineData.data; break;
+          }
+        }
+      }
+    }
+
+    var entry={id:Date.now(), t:txt, img:imgUrl, genre:ag, nc:nc};
+    G.hist.push(entry); save();
+
+    ldr.replaceWith(mkCard(entry));
+    if(nc.length) toast('✨ New: '+nc.join(', '));
+    mi.value=''; mi.style.height='auto';
+
+  }catch(err){
+    ldr.remove(); toast(err.message||'Something went wrong',true); console.error(err);
+  }
+  btn.disabled=false; btn.textContent='✦';
+}
+
+function lmsg(m){ var e=document.getElementById('lmsg'); if(e) e.textContent=m; }
+
+function mkCard(e){
+  var paras=e.t.split(/\n\n+/).filter(Boolean).map(function(p){return '<p>'+esc(p)+'</p>';}).join('');
+  var d=document.createElement('div'); d.className='sc';
+  d.innerHTML=
+    '<div class="sc-txt"><div class="sc-meta"><div class="sc-tag">'+esc(e.genre)+'</div><div class="sc-line"></div></div><div class="sc-prose">'+paras+'</div></div>'
+    +'<div class="sc-img">'+(e.img?'<img src="'+e.img+'" alt="Scene">':'<div class="sc-img-err">🎨 Image unavailable — check Gemini key</div>')+'</div>'
+    +(e.nc&&e.nc.length?'<div class="sc-new">✦ New characters: '+esc(e.nc.join(', '))+'</div>':'');
+  return d;
+}
+
+/* ── CHARACTERS ── */
+function renderChars(){
+  var list=document.getElementById('chars-list');
+  if(!G.chars.length){
+    list.innerHTML='<div id="chars-empty">No characters yet.<br>They appear automatically when Grok introduces new people,<br>or tap + Add to create one.</div>';
+    return;
+  }
+  list.innerHTML='';
+  G.chars.forEach(function(c){
+    var el=document.createElement('div');
+    el.className='cc'+(c.role==='protagonist'?' prot':'');
+    el.innerHTML=
+      '<div class="cc-top">'
+      +'<div class="cc-photo" onclick="pickPhoto('+c.id+')">'
+      +(c.photo?'<img src="'+c.photo+'" alt="">':'<div class="cc-ph-empty"><span>🖼</span><span>Tap to add</span></div>')
+      +'<div class="cc-ph-ov">📷</div></div>'
+      +'<div class="cc-flds">'
+      +'<input class="cc-name" value="'+esc(c.name)+'" placeholder="Full name" oninput="uc('+c.id+',\'name\',this.value)">'
+      +'<input class="cc-nick" value="'+esc(c.nick||'')+'" placeholder="Nickname / alias (optional)" oninput="uc('+c.id+',\'nick\',this.value)">'
+      +'<select class="cc-role" onchange="uc('+c.id+',\'role\',this.value)">'
+      +'<option value="supporting"'+(c.role==='supporting'?' selected':'')+'>Supporting</option>'
+      +'<option value="protagonist"'+(c.role==='protagonist'?' selected':'')+'>Protagonist</option>'
+      +'<option value="antagonist"'+(c.role==='antagonist'?' selected':'')+'>Antagonist</option>'
+      +'</select></div></div>'
+      +'<div class="cc-desc-w"><textarea class="cc-desc" placeholder="Appearance, personality, traits…" oninput="uc('+c.id+',\'desc\',this.value)">'+esc(c.desc||'')+'</textarea></div>'
+
+```
+  +'<div class="cc-foot"><span class="cc-src">'+(c.src==='story'?'↳ from story':'↳ manual')+'</span><button class="cc-del" onclick="delChar('+c.id+')">Remove</button></div>';
+list.appendChild(el);
+```
+
+});
+}
+function addChar(){
+G.chars.push({id:Date.now(),name:‘New Character’,nick:’’,role:‘supporting’,desc:’’,photo:null,src:‘manual’});
+save(); renderChars();
+}
+function uc(id,f,v){
+var c=G.chars.find(function(x){return x.id===id;});
+if(!c) return; c[f]=v; save();
+if(f===‘role’) renderChars();
+}
+function delChar(id){
+if(!confirm(‘Remove this character?’)) return;
+G.chars=G.chars.filter(function(c){return c.id!==id;}); save(); renderChars();
+}
+function pickPhoto(id){ uploadId=id; document.getElementById(‘photo-pick’).click(); }
+function onPhoto(e){
+var f=e.target.files[0]; if(!f||!uploadId) return;
+var r=new FileReader();
+r.onload=function(ev){
+var c=G.chars.find(function(x){return x.id===uploadId;});
+if(c){c.photo=ev.target.result; save(); renderChars();}
+};
+r.readAsDataURL(f); e.target.value=’’;
+}
+
+/* ── HELPERS ── */
+function toast(msg,err){
+var t=document.getElementById(‘toast’);
+t.textContent=msg; t.className=‘show’+(err?’ err’:’’);
+if(toastT) clearTimeout(toastT);
+toastT=setTimeout(function(){t.className=’’;},3200);
+}
+function esc(s){
+return String(s||’’).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
+}
+</script>
+
+</body>
+</html>
